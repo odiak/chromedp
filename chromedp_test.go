@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 )
 
 var pool *Pool
@@ -30,6 +31,11 @@ func testAllocate(t *testing.T, path string) *Res {
 	err = WithErrorf(t.Errorf)(c.c)
 	if err != nil {
 		t.Fatalf("could not set errorf: %v", err)
+	}
+
+	err = WithNewTargetTimeout(5 * time.Second)(c.c)
+	if err != nil {
+		t.Fatalf("could not set new target timeout: %v", err)
 	}
 
 	h := c.c.GetHandlerByIndex(0)

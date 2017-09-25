@@ -37,6 +37,8 @@ type CDP struct {
 	// logging funcs
 	logf, debugf, errorf LogFunc
 
+	newTargetTimeout time.Duration
+
 	sync.RWMutex
 }
 
@@ -82,8 +84,11 @@ func New(ctxt context.Context, opts ...Option) (*CDP, error) {
 		}
 	}()
 
-	// TODO: fix this
-	timeout := time.After(DefaultNewTargetTimeout)
+	d := c.newTargetTimeout
+	if d <= 0 {
+		d = DefaultNewTargetTimeout
+	}
+	timeout := time.After(d)
 
 loop:
 	// wait until at least one target active
@@ -241,7 +246,11 @@ func (c *CDP) newTarget(ctxt context.Context, opts ...client.Option) (string, er
 		return "", err
 	}
 
-	timeout := time.After(DefaultNewTargetTimeout)
+	d := c.newTargetTimeout
+	if d <= 0 {
+		d = DefaultNewTargetTimeout
+	}
+	timeout := time.After(d)
 
 loop:
 	for {
@@ -427,6 +436,14 @@ func WithLog(f LogFunc) Option {
 // Note: NOT YET IMPLEMENTED.
 func WithConsolef(f LogFunc) Option {
 	return func(c *CDP) error {
+		return nil
+	}
+}
+
+// WithNewTargetTimeout is a CDP option to specify time to wait for a new target.
+func WithNewTargetTimeout(d time.Duration) Option {
+	return func(c *CDP) error {
+		c.newTargetTimeout = d
 		return nil
 	}
 }
